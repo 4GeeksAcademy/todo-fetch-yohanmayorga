@@ -1,14 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const TodoList2 = () => {
+const URL = "https://playground.4geeks.com/apis/fake/todos/user/yohanmayorga"
+
+const TodoList = () => {
 	const [todos, setTodos] = useState([]);
 	const [newTodo, setNewTodo] = useState("");
 
 	const handleAddTodo = (e) => {
 		if (e.key === "Enter") {
 			if (newTodo.trim() !== "") {
-				setTodos([...todos, { text: newTodo.trim(), checked: false }]);
+				setTodos([...todos, { text: newTodo.trim(), done: false }]);
 				setNewTodo("");
+
+				// CARGA LA FUNCIÓN UPDATE LIST
+				updateList()
 			};
 		};
 	};
@@ -17,10 +22,91 @@ const TodoList2 = () => {
 		const newTodos = [...todos];
 		newTodos.splice(index, 1);
 		setTodos(newTodos);
+		deleteElement(index);
 	}
 
 	const done = () => {
-		setTodos([]);
+		setTodos([])
+		deleteUser()
+	}
+
+	// CODIGO FETCH
+
+	useEffect(() => {
+		fetch(URL)
+			.then((response) => {
+				if (!response.ok) {
+					createUser()
+				}
+			})
+			.catch((error) => console.log(error))
+	})
+
+	// Método GET (obener listado)
+	const getList = () => {
+		fetch(URL)
+			.then((response) => response.json())
+			.then((json) => console.log(json))
+			.catch((error) => console.log(error))
+	}
+
+	// Método POST (crear usuario)
+	const createUser = () => {
+		fetch(URL, {
+			method: "POST",
+			body: JSON.stringify([]),
+			headers: {
+				"Content-type": "application/json",
+			},
+		})
+			.then((response) => response.json())
+			.then((json) => console.log(json))
+			.catch((error) => console.log(error))
+	}
+
+	// Método PUT (actualizar listado)
+	const updateList = () => {
+		fetch(URL, {
+			method: "PUT",
+			body: JSON.stringify(
+				[...todos, { text: newTodo.trim(), done: false }]
+			),
+			headers: {
+				"Content-type": "application/json",
+			},
+		})
+			.then((response) => { getList() })
+			.catch((error) => console.log(error))
+	}
+
+	// Método PUT (borrar elemento)
+	const deleteElement = (index) => {
+		const updatedTodos = todos.filter((todo, i) => i !== index);
+
+		fetch(URL, {
+			method: "PUT",
+			body: JSON.stringify(
+				updatedTodos
+			),
+			headers: {
+				"Content-type": "application/json",
+			},
+		})
+			.then((response) => { getList() })
+			.catch((error) => console.log(error))
+	}
+
+	// Método DELETE (borrar usuario)
+	const deleteUser = () => {
+		fetch(URL, {
+			method: "DELETE",
+			headers: {
+				"Content-type": "application/json",
+			},
+		})
+			.then((response) => response.json())
+			.then((json) => console.log(json))
+			.catch((error) => console.log(error))
 	}
 
 	return (
@@ -49,4 +135,4 @@ const TodoList2 = () => {
 	);
 }
 
-export default TodoList2;
+export default TodoList;
